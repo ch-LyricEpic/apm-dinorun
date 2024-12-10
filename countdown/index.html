@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Jost:ital,wght@0,100..900;1,100..900&family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet">
+    <title>Dino Run Countdown</title>
+    <style>
+        body {
+            font-family: 'Jost','Noto Serif SC', Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: #333;
+            color: white;
+        }
+        .header img {
+            height: 40px;
+        }
+        .header .buttons {
+            display: flex;
+            gap: 20px;
+        }
+        .header button {
+            font-family: Jost, Arial, sans-serif;
+            padding: 10px 20px;
+            background-color: #a14242;
+            border: none;
+            color: rgb(255, 255, 255);
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .header button:hover {
+            background-color: #e53e36;
+        }
+        .countdown-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+            text-align: center;
+        }
+        .countdown {
+            font-size: 320px;
+            font-weight: bold;
+            color: #000000;
+        }
+        .message {
+            font-size: 3em;
+            margin-top: 20px;
+            color: #555;
+        }
+        .submessage {
+            font-size: 1.5em;
+            margin-top: 10px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="./assets/banner.png" alt="Banner">
+        <div class="buttons">
+            <button id="testButton" onclick="startCountdown(5, '测试模式启动')" >Test(5')</button>
+            <button id="ratingButton" onclick="startCountdown(210, '当前:3分30秒评分模式倒计时')">Rating Tasks(210')</button>
+            <button id="competitionButton" onclick="startCountdown(240, '当前:4分00秒对抗赛倒计时')">Competition(240')</button>
+        </div>
+    </div>
+
+    <div class="countdown-container">
+        <div class="countdown" id="countdown"></div>
+        <div class="message" id="message"></div>
+        <div class="submessage" id="submessage"></div>
+    </div>
+
+    <script>
+        let countdownSeconds;
+        let countdownInterval;
+        let currentMode;
+        let isPaused = false;
+        let isCountingDown = false;
+        let preCountdownInterval;
+
+        function disableSpacebarListener() {
+            document.removeEventListener('keydown', spacebarHandler);
+        }
+
+        function enableSpacebarListener() {
+            document.addEventListener('keydown', spacebarHandler);
+        }
+
+        function disableButtons() {
+            document.getElementById("testButton").disabled = true;
+            document.getElementById("ratingButton").disabled = true;
+            document.getElementById("competitionButton").disabled = true;
+        }
+
+        function enableButtons() {
+            document.getElementById("testButton").disabled = false;
+            document.getElementById("ratingButton").disabled = false;
+            document.getElementById("competitionButton").disabled = false;
+        }
+
+        function spacebarHandler(event) {
+            if (event.code === 'Space' && isCountingDown) {
+                togglePauseResume();
+            }
+        }
+
+        function startCountdown(seconds, mode) {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            currentMode = mode;
+            document.getElementById("message").innerHTML = currentMode;
+
+            let preCountdown = 3;
+            document.getElementById("countdown").innerHTML = preCountdown;
+            document.getElementById("submessage").innerHTML = ''; 
+
+            disableSpacebarListener();
+            disableButtons();
+            preCountdownInterval = setInterval(function() {
+                preCountdown--;
+                document.getElementById("countdown").innerHTML = preCountdown;
+
+                if (preCountdown <= 1) {
+                    clearInterval(preCountdownInterval);
+                    setTimeout(function() {
+                        enableSpacebarListener();
+                        enableButtons();
+                        isCountingDown = true;
+                        startRealCountdown(seconds);
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        function startRealCountdown(seconds) {
+            countdownSeconds = seconds;
+            countdownInterval = setInterval(function() {
+                if (!isPaused) {
+                    const minutes = Math.floor(countdownSeconds / 60);
+                    const seconds = countdownSeconds % 60;
+
+                    document.getElementById("countdown").innerHTML = `${minutes}:${seconds}`;
+
+                    if (countdownSeconds <= 0) {
+                        clearInterval(countdownInterval);
+                        document.getElementById("countdown").innerHTML = "END";
+                        document.getElementById("message").innerHTML = ''; 
+                    }
+
+                    countdownSeconds--;
+                }
+            }, 1000);
+        }
+
+        function togglePauseResume() {
+            if (isPaused) {
+                isPaused = false;
+                document.getElementById("submessage").innerHTML = 'Resume';
+            } else {
+                isPaused = true;
+                document.getElementById("submessage").innerHTML = 'Countdown Paused. [Space] to continue.';
+            }
+        }
+    </script>
+
+</body>
+</html>
